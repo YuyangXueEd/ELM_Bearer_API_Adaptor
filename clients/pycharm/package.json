@@ -1,0 +1,7 @@
+{
+  "name": "elm-pycharm-acp",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "dependencies": { "@agentclientprotocol/codex-acp": "1.11.0" }
+}

@@ -1,0 +1,8 @@
+{
+  "agent_servers": {
+    "Codex via ELM": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": ["C:\\Projects\\ELM_Bearer_API_Adaptor\\clients\\pycharm\\launch.mjs"]
+    }
+  }
+}

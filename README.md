@@ -23,7 +23,7 @@ Relay:   Codex / compatible client ── local token ──> 127.0.0.1:8787
 
 ## Quick start
 
-Requires Node.js 22+ and your own ELM API key. There are no runtime dependencies or build steps.
+Requires Node.js 22+ and your own ELM API key. The relay and diagnostics have no runtime dependencies or build steps. The optional PyCharm ACP client has its own pinned dependencies in `clients/pycharm`.
 
 ```sh
 git clone https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor.git
@@ -56,7 +56,7 @@ Each colleague needs their own key and model permissions. The default `gpt-5.3-c
 node src/cli.js config --out codex.example.toml
 ```
 
-This creates a key-free TOML file and refuses to overwrite an existing file. Follow the [VS Code guide](docs/vscode/README.md) or [PyCharm guide](docs/pycharm/README.md) to apply it. A `.env` loaded by this project's commands is **not automatically available to an IDE**; the guides explain process environment setup.
+This creates a key-free TOML file and refuses to overwrite an existing file. Follow the separate [VS Code setup](clients/vscode/README.md) or [PyCharm setup](clients/pycharm/README.md). The PyCharm folder includes a pinned ACP launcher that loads the local `.env`; VS Code needs the process environment or provider authentication configured explicitly.
 
 ### Optional local relay
 

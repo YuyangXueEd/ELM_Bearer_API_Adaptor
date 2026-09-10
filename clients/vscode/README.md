@@ -2,6 +2,8 @@
 
 These instructions apply to the official Codex extension. The separate ELM Coding extension does not use this configuration.
 
+**Current verification:** the extension's bundled Codex engine returned a reply through ELM. The graphical panel also returned a test reply, but its ELM routing was not confirmed; a project-level configuration alone did not establish the active provider. Full IDE editing remains unverified. See the [dated report](../../docs/VERIFICATION-2026-09-10.md). Restart the extension after applying the provider configuration and verify routing before treating a successful reply as an ELM pass.
+
 ## 1. Supply your ELM API key
 
 In Windows, search for **Edit environment variables for your account**. Add a user variable named `ELM_API_KEY` with your own ELM key as its value. Use an ELM key, not an OpenAI key, and keep it out of this shared folder.
@@ -39,7 +41,7 @@ Sources: [custom providers](https://learn.chatgpt.com/docs/config-file/config-ad
 
 ## 3. Restart and verify
 
-Restart VS Code and create a new Codex conversation. Follow [Verification and troubleshooting](../VERIFY.md) to check the provider, a simple reply and a file read. Existing conversations may retain previous model settings.
+Restart VS Code and create a new Codex conversation. Follow [Verification and troubleshooting](../../docs/VERIFY.md) to check the provider, a simple reply and a file read. Existing conversations may retain previous model settings.
 
 For WSL, SSH or containers, identify where the extension host and Codex process run. Configure the key and configuration file on that host. Windows user variables do not automatically configure every remote environment.
 

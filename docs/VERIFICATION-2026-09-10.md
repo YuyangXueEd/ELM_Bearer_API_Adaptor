@@ -4,6 +4,7 @@ This is a development snapshot for one Windows machine and one ELM account, not 
 
 ## Passed
 
+- Guided Windows launcher: the user confirmed that the setup dialog was visible. Its shared model-discovery function fetched 54 model IDs from the test account; shared configuration/startup functions generated a key-free direct-ELM config and opened a separate VS Code window. Automated checks passed for model-list validation, preservation of sandbox settings, rejection of foreign provider configs, argument quoting, credential isolation and Windows DPAPI round trips. This does not extend the earlier relay UI test into a completed direct-mode coding workflow.
 - Actual VS Code UI: version 1.137.0, `openai.chatgpt` 26.903.71938, bundled Codex 0.153.4, on Windows with a dedicated `CODEX_HOME` and VS Code user-data directory. The UI's official non-administrator sandbox setup completed and saved `sandbox = "unelevated"`; normal approval controls stayed enabled.
 - UI routing: the new conversation recorded `source = vscode`, `model_provider = elm`, initially `model = gpt-5.5`. With other relay clients idle, each UI task generated successful `POST /v1/responses` traffic through the relay whose upstream is fixed to ELM. No ChatGPT sign-in was needed in this isolated profile for the configured provider.
 - UI file read: GPT-5.5 read `README.md` and `add.py` with successful tool outputs, reported the verification word `ELM_FILE_READ_OK` (not supplied in the prompt), and identified that `add(2, 3)` returned -1. It made no edits in that turn.

@@ -2,6 +2,8 @@
 
 These instructions apply to the official Codex extension. The separate ELM Coding extension does not use this configuration.
 
+**Prefer a setup window?** Use [Easy start for Windows](EASY-START.md): double-click `Start ELM.cmd`, enter your key, load your account's models and open VS Code. No Node.js or manual TOML editing is needed. The manual relay and direct instructions below remain available.
+
 **Verified on Windows:** VS Code 1.137.0, extension `openai.chatgpt` 26.903.71938, bundled Codex 0.153.4. With a dedicated user-level `CODEX_HOME`, the graphical panel used ELM through the local relay, read files, fixed a Python function, created tests and ran all 3 successfully. Switching from GPT-5.5 to GPT-5.2 inside the same conversation retained ELM routing and successfully reran the tests. The earlier project-level configuration failure is retained in the [dated report](../../docs/VERIFICATION-2026-09-10.md).
 
 ## Tested isolated Windows setup

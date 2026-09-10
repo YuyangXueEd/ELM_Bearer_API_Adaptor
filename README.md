@@ -12,7 +12,7 @@ Read files, make edits, run tests — and switch supported models inside VS Code
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Experimental_pilot-amber)](#compatibility)
 
-**[Quick start](#quick-start)** · **[VS Code guide](clients/vscode/README.md)** · **[PyCharm guide](clients/pycharm/README.md)** · **[Test results](docs/VERIFICATION-2026-09-10.md)** · **[Report an issue](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/issues)**
+**[Easy Windows setup](#easy-start-on-windows)** · **[Manual setup](#quick-start)** · **[VS Code guide](clients/vscode/README.md)** · **[PyCharm guide](clients/pycharm/README.md)** · **[Test results](docs/VERIFICATION-2026-09-10.md)**
 
 </div>
 
@@ -33,6 +33,7 @@ ELM Bearer API Adaptor provides connection diagnostics, ready-to-use Codex confi
 | **Keep credentials separate** | In relay mode, the IDE uses a local token while the relay holds your upstream ELM key. |
 | **Switch models in the plugin** | GPT-5.5 → GPT-5.2 switching was verified in the same VS Code conversation, with ELM routing preserved. |
 | **Start small** | The relay and diagnostics use Node.js built-ins: no runtime dependencies, database, or build step. |
+| **Launch without terminal commands** | A Windows setup dialog handles key entry, project selection, account model discovery and an isolated VS Code profile. Direct mode needs no Node.js or relay. |
 | **Follow an IDE-specific guide** | Separate VS Code and PyCharm folders, with configuration examples and explicit verification steps. |
 
 ## A coding workflow, verified
@@ -58,7 +59,23 @@ VS Code · Codex · ELM · GPT-5.5
 
 Routing was checked against both **session metadata** and **successful relay requests**. File changes and tool execution results were inspected independently. [Read the evidence →](docs/VERIFICATION-2026-09-10.md)
 
+## Easy start on Windows
+
+**[Download ZIP](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/archive/refs/heads/main.zip) → Extract All → double-click `Start ELM.cmd`**
+
+1. Enter your ELM API key and choose a project folder.
+2. Click **Load models** to fetch the full list available to your account, then choose your starting model.
+3. Click **Open ELM in VS Code**.
+
+No Node.js, Git, running relay or manual TOML edits are needed for this path. You still need VS Code and the official Codex extension, and must complete Codex's own first-run sandbox setup. The launcher offers optional Windows-encrypted key storage and keeps your normal Codex settings separate.
+
+The full account list includes models that may not support Codex tools. GPT-5.5 and GPT-5.2 have passed our earlier UI tests. This launcher selects the starting model; it does not replace the plugin's own model picker.
+
+**[Open the Windows setup guide →](clients/vscode/EASY-START.md)**
+
 ## Quick start
+
+Prefer the command line, a relay, or PyCharm? Use the manual path below.
 
 You need **Node.js 22+**, your own **ELM API key**, and an IDE/client to connect. Each user needs their own ELM access and model permissions.
 
@@ -162,7 +179,8 @@ The client adds `/responses`. If you change `ELM_ADAPTOR_PORT`, regenerate the r
 | VS Code model switching | GPT-5.5 → GPT-5.2 passed; GPT-5.2 also executed tests |
 | PyCharm ACP transport | Adapter 1.11.0 / Codex 0.153.4: authentication, session creation and text replies passed in both modes |
 | PyCharm UI and editing | Pending; PyCharm is not installed on the test machine |
-| Automatic ELM model catalog | Not implemented; the plugin picker can include models unavailable to your account |
+| Account model discovery in the Windows launcher | Fetches the full ELM list when you click Load models |
+| Automatic ELM catalog inside the Codex plugin | Not implemented; its own picker can include models unavailable to your account |
 | Long-session compaction | Upstream support unconfirmed |
 
 The CLI default remains `gpt-5.3-codex`, which passed API/CLI checks but produced a missing-metadata warning in the tested Codex build. The VS Code example uses the UI-tested `gpt-5.5`. Use `ELM_MODEL` or `--model` for another compatible model.

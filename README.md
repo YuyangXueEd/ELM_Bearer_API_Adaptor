@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="assets/elm-bearer-logo.png" alt="ELM Bearer API Adaptor — coding bear logo" width="820">
+
 # ELM Bearer API Adaptor
 
 ### Bring your ELM API key into your coding workflow.

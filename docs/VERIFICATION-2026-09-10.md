@@ -16,7 +16,7 @@ The offline suite checks authentication, client-header isolation, exact body for
 ## Incomplete or blocked
 
 - **Actual Codex file-read workflow:** the clients received model responses, but local shell execution was rejected by the machine's command policy. No successful file-read or editing workflow is claimed. Changing the API relay cannot resolve an independent command-execution restriction.
-- **VS Code UI:** a later test accessed the user's open window, completed onboarding and received `ELM_VSCODE_UI_OK` in the Codex panel. Routing of that UI response to ELM has not been established, so this is not counted as an ELM integration pass. A project-level provider configuration alone did not establish that the panel used it.
+- **VS Code UI uses the default provider in the tested conversation:** the panel returned `ELM_VSCODE_UI_OK`, but read-only inspection of its session metadata showed `source = vscode`, `model_provider = openai`, and `model = gpt-6-astra`. A fresh follow-up at 11:51 UTC returned `ELM_ROUTE_CHECK_0910` with the same model while the running ELM relay received zero requests. This is a confirmed routing failure for that conversation, not an ELM integration pass. The project-level ELM configuration had not taken effect for it.
 - **Model metadata:** the tested Codex build warned that gpt-5.3-codex metadata was missing and used fallback metadata. The model itself was available through ELM. Client model-catalog compatibility needs further investigation.
 - PyCharm UI has not been exercised. ACP authentication and transport were tested separately as described above.
 - `/responses/compact`, WebSockets, image workflows, all tool types and locally hosted models have not been validated.

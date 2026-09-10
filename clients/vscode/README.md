@@ -2,7 +2,13 @@
 
 These instructions apply to the official Codex extension. The separate ELM Coding extension does not use this configuration.
 
-**Current verification:** the extension's bundled Codex engine returned a reply through ELM. The graphical panel also returned a test reply, but its ELM routing was not confirmed; a project-level configuration alone did not establish the active provider. Full IDE editing remains unverified. See the [dated report](../../docs/VERIFICATION-2026-09-10.md). Restart the extension after applying the provider configuration and verify routing before treating a successful reply as an ELM pass.
+**Current verification:** the extension's bundled Codex engine returned a reply through ELM. However, the tested graphical-panel conversation used `openai` / `gpt-6-astra`, and a fresh reply generated no request to the running ELM relay. Its project-level ELM configuration had not taken effect. Full IDE editing through ELM remains unverified. See the [dated report](../../docs/VERIFICATION-2026-09-10.md).
+
+### How to prove which provider is used
+
+Check the actual conversation's session metadata (`source`, `model_provider`) and turn context (`model`), not the model's answer to "which API are you using?". Read these locally; raw session files can contain private data and should not be uploaded.
+
+For relay mode, start `npm start`, send a unique harmless prompt from the VS Code Codex panel, and correlate it with a new `POST /v1/responses` log entry and successful upstream status. Keep other relay clients idle during the check. The relay's upstream is fixed to ELM. A matching reply without a relay request does not prove ELM connectivity. After changing configuration, restart the extension and create a new conversation before repeating the check.
 
 ## 1. Supply your ELM API key
 

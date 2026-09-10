@@ -1,157 +1,231 @@
+<div align="center">
+
 # ELM Bearer API Adaptor
 
-Connect coding agents to the University of Edinburgh's ELM API. This community project provides **connection diagnostics, Codex configuration generation and an optional authenticated local streaming relay**.
+### Bring your ELM API key into your coding workflow.
 
-It is an integration layer, not a new autonomous coding agent. Codex or another compatible client supplies the coding workflow and file tools. It is not affiliated with or endorsed by EDINA, OpenAI or JetBrains.
+Connect Codex to the University of Edinburgh's ELM API.<br>
+Read files, make edits, run tests — and switch supported models inside VS Code.
 
-## Readiness: experimental pilot
+[![CI](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/actions/workflows/test.yml/badge.svg)](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/actions/workflows/test.yml)
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-43853D?logo=nodedotjs&logoColor=white)](package.json)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Status](https://img.shields.io/badge/Status-Experimental_pilot-amber)](#compatibility)
 
-Ready for colleagues to try in a disposable project. **VS Code routing, file reading, editing, test execution and model switching have passed on the Windows setup below.** PyCharm UI testing remains pending. This is still a technical pilot, not a guarantee for every installation or ELM model.
+**[Quick start](#quick-start)** · **[VS Code guide](clients/vscode/README.md)** · **[PyCharm guide](clients/pycharm/README.md)** · **[Test results](docs/VERIFICATION-2026-09-10.md)** · **[Report an issue](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/issues)**
 
-| Component | Evidence | Status |
-|---|---|---|
-| Diagnostics and local relay | Offline tests plus live streaming/function-call checks | Ready for pilot testing |
-| PyCharm ACP launcher | Authentication, session creation and text replies through ELM | Ready for transport testing; PyCharm UI/editing still unverified |
-| VS Code Codex extension | Actual UI used ELM with GPT-5.5, read files, patched code and ran 3 passing tests | Verified on Windows / VS Code 1.137.0 / extension 26.903.71938 |
-| VS Code model switching | Selected GPT-5.5 then GPT-5.2 in the plugin; both used ELM and executed tools | Verified for these two models; automatic ELM catalog discovery is not implemented |
+</div>
 
-See the [review findings](docs/REVIEW.md) and [dated evidence](docs/VERIFICATION-2026-09-10.md). An HTTP 200 or a model saying "I use ELM" is not proof of a working IDE integration.
+---
 
-## Why this exists
+**Your editor. Your ELM access. A working path from prompt to tested code.**
 
-ELM already documents an OpenAI-compatible Responses API. Bearer authentication is not a different protocol. The common setup problems are selecting the correct endpoint, passing credentials to the IDE process and configuring the agent's provider.
+ELM Bearer API Adaptor provides connection diagnostics, ready-to-use Codex configuration templates, and an optional local streaming relay. Codex supplies the coding tools; this project connects those tools to ELM.
 
-Use **direct mode** when your client supports a custom base URL and Bearer key. Use the **local relay** when you want the upstream ELM key held in one local process while clients use a separate local token. The relay preserves JSON, SSE events, function calls and upstream error statuses; it does not translate Chat Completions into Responses or invent missing model capabilities.
+> **Verified in the VS Code UI:** ELM routing, file reads, code edits, test execution, and switching from GPT-5.5 to GPT-5.2. Start with a disposable project. PyCharm's ACP transport has passed separate checks; its IDE workflow is still awaiting testing.
+
+## Why use it?
+
+| | What you get |
+|---|---|
+| **Code with your ELM access** | Connect the official Codex extension to an ELM model available to your account. |
+| **Check the connection first** | Discover model IDs and optionally test streaming plus a function-call round trip before configuring your IDE. |
+| **Keep credentials separate** | In relay mode, the IDE uses a local token while the relay holds your upstream ELM key. |
+| **Switch models in the plugin** | GPT-5.5 → GPT-5.2 switching was verified in the same VS Code conversation, with ELM routing preserved. |
+| **Start small** | The relay and diagnostics use Node.js built-ins: no runtime dependencies, database, or build step. |
+| **Follow an IDE-specific guide** | Separate VS Code and PyCharm folders, with configuration examples and explicit verification steps. |
+
+## A coding workflow, verified
+
+The following is a **summary of the actual Windows UI test**, not a simulated demo:
 
 ```text
-Direct:  Codex / compatible client ── ELM Bearer key ──> ELM
+VS Code · Codex · ELM · GPT-5.5
 
-Relay:   Codex / compatible client ── local token ──> 127.0.0.1:8787
-                                                       │
-                                                  ELM Bearer key
-                                                       │
-                                                       ▼
-                                               ELM /api/v1
+1. Read README.md and add.py
+   → Found the verification word from the file.
+   → Identified the bug: add(2, 3) returned -1.
+
+2. Fix the function and add tests
+   → Changed "return a - b" to "return a + b".
+   → Created test_add.py.
+   → Ran python -m unittest -v: 3 tests passed.
+
+3. Select GPT-5.2 from the plugin menu
+   → Provider remained ELM.
+   → Ran the tests again: 3 tests passed.
 ```
+
+Routing was checked against both **session metadata** and **successful relay requests**. File changes and tool execution results were inspected independently. [Read the evidence →](docs/VERIFICATION-2026-09-10.md)
 
 ## Quick start
 
-Requires Node.js 22+ and your own ELM API key. The relay and diagnostics have no runtime dependencies or build steps. The optional PyCharm ACP client has its own pinned dependencies in `clients/pycharm`.
+You need **Node.js 22+**, your own **ELM API key**, and an IDE/client to connect. Each user needs their own ELM access and model permissions.
+
+### 1. Get the project
 
 ```sh
 git clone https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor.git
 cd ELM_Bearer_API_Adaptor
 ```
 
-Copy `.env.example` to `.env` in your editor and fill in `ELM_API_KEY`. Keep this file local. If using the relay, generate a separate token and place it in `ELM_ADAPTOR_TOKEN`:
+Copy `.env.example` to `.env` in your editor and fill in `ELM_API_KEY`. Keep the file local.
 
-```sh
-node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-```
-
-Check connectivity and model availability:
+### 2. Check your ELM access
 
 ```sh
 npm run doctor
 ```
 
-An optional live check makes two small generation requests, validates streaming and a diagnostic function-call round trip, and uses ELM quota. It executes no model-requested code:
+This checks model discovery and prints the model IDs available to your account.
+
+For an optional streaming and diagnostic tool-call check:
 
 ```sh
-npm run doctor -- --live
+npm run doctor -- --live --model gpt-5.5
 ```
 
-Each colleague needs their own key and model permissions. The default `gpt-5.3-codex` was available for the account used during development. Use `ELM_MODEL` or `--model` to select another supported model; the live probe requires Responses function calls and `reasoning.effort = low` support.
+The live check makes two small generation requests and uses ELM quota. It executes no model-requested code. A listed model still needs compatible Responses and tool support to work with Codex.
 
-### Direct Codex configuration
+### 3. Choose your IDE
+
+| Client | Start here | Current status |
+|---|---|---|
+| **VS Code + Codex** | **[Set up VS Code →](clients/vscode/README.md#tested-isolated-windows-setup)** | Read, edit, test and model switching verified through the relay on Windows |
+| **PyCharm + Custom ACP** | **[Set up PyCharm →](clients/pycharm/README.md)** | Launcher and ACP transport tested; actual PyCharm UI pending |
+| **Another compatible client** | [Connection options below](#connection-options) | Configure and verify for your client and model |
+
+The VS Code guide includes an isolated setup that keeps your normal Codex configuration available. The PyCharm folder includes its own pinned ACP dependencies and a launcher that loads your local `.env`.
+
+> **The configuration detail that matters:** Codex provider settings belong in the user-level `CODEX_HOME/config.toml`. Project-local `.codex/config.toml` ignores `model_provider` and `model_providers`. The VS Code guide walks through the correct location and process environment. [Official configuration rules](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
+
+## Connection options
+
+ELM already provides an OpenAI-compatible Responses endpoint. Choose the credential arrangement that fits your client.
+
+```mermaid
+flowchart LR
+    A["Codex / compatible client"] -->|"Direct · ELM key"| E["ELM API"]
+    A -->|"Relay · local token"| R["Local adaptor<br/>127.0.0.1:8787"]
+    R -->|"ELM key · HTTPS"| E
+```
+
+### Direct access
+
+Use this when the client supports a custom base URL and Bearer credentials:
 
 ```sh
-node --env-file=.env src/cli.js config --out codex.example.toml
+node --env-file=.env src/cli.js config --model gpt-5.5 --out codex.example.toml
 ```
 
-This creates a key-free TOML file and refuses to overwrite an existing file. Follow the separate [VS Code setup](clients/vscode/README.md) or [PyCharm setup](clients/pycharm/README.md). The PyCharm folder includes a pinned ACP launcher that loads the local `.env`; VS Code needs the process environment or provider authentication configured explicitly.
+The generated TOML contains no credentials and refuses to overwrite an existing file. Apply it using your IDE guide and supply `ELM_API_KEY` to the actual Codex process.
 
-**Provider settings belong in the user-level `CODEX_HOME/config.toml`.** Current Codex ignores `model_provider` and `model_providers` in a project's `.codex/config.toml`. Do not copy the template there. [Official configuration rules](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
+### Local relay
 
-### Optional local relay
+Generate a separate token and save it as `ELM_ADAPTOR_TOKEN` in your local `.env`:
 
-In the first terminal:
+```sh
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+Start the relay and leave it running:
 
 ```sh
 npm start
 ```
 
-In a second terminal:
+In another terminal, optionally verify the relay and generate configuration:
 
 ```sh
-npm run doctor -- --proxy --live
-node --env-file=.env src/cli.js config --proxy --out codex.proxy.example.toml
+npm run doctor -- --proxy --live --model gpt-5.5
+node --env-file=.env src/cli.js config --proxy --model gpt-5.5 --out codex.proxy.example.toml
 ```
 
-Merge the generated config as described in the client guides. The Codex process needs `ELM_ADAPTOR_TOKEN`; only the relay needs `ELM_API_KEY`. If you change `ELM_ADAPTOR_PORT`, regenerate the proxy config using the same `.env`.
+| Setting | Direct | Relay |
+|---|---|---|
+| Base URL | `https://elm.edina.ac.uk/api/v1` | `http://127.0.0.1:8787/v1` |
+| Client credential | `ELM_API_KEY` | `ELM_ADAPTOR_TOKEN` |
+| Model | An enabled, compatible ELM model | The same |
+| Protocol | Responses for Codex | Responses for Codex |
 
-For another OpenAI-compatible client, configure:
+The client adds `/responses`. If you change `ELM_ADAPTOR_PORT`, regenerate the relay configuration from the same `.env`.
 
-| Setting | Relay value |
+## Compatibility
+
+**Experimental pilot · verified on 10 September 2026**
+
+| Capability | Evidence |
 |---|---|
-| Base URL | `http://127.0.0.1:8787/v1` |
-| API key | Your `ELM_ADAPTOR_TOKEN` |
-| Model | A model enabled for your ELM account |
-| Protocol | Responses or Chat Completions, according to client and model support |
+| Model discovery | Authenticated ELM `/models` checks passed |
+| Streaming and diagnostic function calls | Passed in direct and relay modes |
+| VS Code read → edit → test | Passed with GPT-5.5 on Windows, VS Code 1.137.0, extension 26.903.71938 / Codex 0.153.4 |
+| VS Code model switching | GPT-5.5 → GPT-5.2 passed; GPT-5.2 also executed tests |
+| PyCharm ACP transport | Adapter 1.11.0 / Codex 0.153.4: authentication, session creation and text replies passed in both modes |
+| PyCharm UI and editing | Pending; PyCharm is not installed on the test machine |
+| Automatic ELM model catalog | Not implemented; the plugin picker can include models unavailable to your account |
+| Long-session compaction | Upstream support unconfirmed |
 
-No OpenAI key or ChatGPT subscription is used for ELM model requests. A particular IDE integration may impose its own authentication requirements. This project does not bypass those requirements.
+The CLI default remains `gpt-5.3-codex`, which passed API/CLI checks but produced a missing-metadata warning in the tested Codex build. The VS Code example uses the UI-tested `gpt-5.5`. Use `ELM_MODEL` or `--model` for another compatible model.
 
-## Supported routes and boundaries
+No OpenAI API key or ChatGPT subscription is used for ELM model requests. Individual client integrations may impose their own authentication requirements.
 
-| Local route | Upstream route | Behaviour |
+<details>
+<summary><strong>Protocol support and operational boundaries</strong></summary>
+
+| Local route | ELM upstream route | Behaviour |
 |---|---|---|
 | `GET /v1/models` | `GET /api/v1/models` | Model discovery |
-| `GET /v1/models/{id}` | `GET /api/v1/models/{id}` | Simple model IDs only; use list discovery for IDs containing slashes |
+| `GET /v1/models/{id}` | `GET /api/v1/models/{id}` | Simple IDs; use list discovery for IDs containing slashes |
 | `POST /v1/responses` | `POST /api/v1/responses` | JSON/SSE byte-preserving relay |
 | `POST /v1/chat/completions` | `POST /api/v1/chat/completions` | JSON/SSE byte-preserving relay |
-| `POST /v1/responses/compact` | `POST /api/v1/responses/compact` | Pass-through only; upstream support is not established |
+| `POST /v1/responses/compact` | `POST /api/v1/responses/compact` | Pass-through; upstream support unconfirmed |
 
-- Binds only to `127.0.0.1`, authenticates every route, and rejects browser-origin requests. It is a single-user local service, not a public or multi-tenant gateway.
-- Keeps the upstream host fixed to ELM. Client headers other than `Accept` are not forwarded; the relay sets upstream authentication itself. Redirects are rejected.
-- Limits request bodies to 10 MiB. Response streaming uses backpressure; client disconnects cancel upstream requests. Upstream socket inactivity timeout is five minutes.
-- Logs method, route and status only, not keys, prompts or responses. Raw upstream responses still go to the authenticated client.
-- Does not automatically retry generation requests. Errors and `Retry-After` are preserved.
-- No WebSocket, Anthropic Messages, file upload or Responses-to-Chat-Completions conversion. ELM's local Qwen/Llama models are not assumed to support Responses.
-- A local token separates credentials; it is not a security boundary against other processes running as your own user.
+- The relay is a single-user local service: it binds to `127.0.0.1`, authenticates every route and rejects browser-origin requests.
+- The production upstream is fixed to ELM. Only the client's `Accept` header is forwarded; authentication is set by the relay. Redirects are rejected.
+- Request bodies are limited to 10 MiB. Streaming uses backpressure, disconnects cancel upstream requests, and upstream socket inactivity times out after five minutes.
+- Logs contain method, route and status only. They do not contain keys, prompts or responses. Authenticated clients receive upstream responses.
+- Upstream errors and `Retry-After` are preserved. Generation requests are not automatically retried.
+- No WebSockets, Anthropic Messages, file uploads or Responses-to-Chat-Completions translation. Local Qwen/Llama models are not assumed to support Responses.
+- A local token separates credentials; it does not isolate them from other processes running as your user.
 
-## Verification status
+</details>
 
-See [the dated verification report](docs/VERIFICATION-2026-09-10.md) and [troubleshooting](docs/VERIFY.md). Live API streaming and diagnostic function-call round trips passed in direct and relay modes. The actual VS Code read/edit/test workflow and model switching passed in relay mode; PyCharm UI and long-session compaction remain unverified.
+## First tester checklist
 
-### First tester checklist
+1. Run `doctor` with your own key and check the model ID.
+2. Follow one IDE guide and start a new conversation in a disposable project.
+3. Confirm ELM routing using session metadata and, for relay mode, matching request logs.
+4. Ask the agent to read a known file, make a small edit and run its test.
+5. Share your IDE/extension versions, model, connection mode and results using the [contribution guide](CONTRIBUTING.md). Keep keys and raw session logs private.
 
-1. Set your own key in the local `.env` and run `npm run doctor`. It prints available model IDs; a listed model is not automatically compatible with Codex tools.
-2. Optionally run `npm run doctor -- --live` to check streaming and a diagnostic function call. This uses ELM quota.
-3. Follow exactly one IDE guide: [VS Code](clients/vscode/README.md) or [PyCharm](clients/pycharm/README.md).
-4. Verify the active provider and request route, then read a harmless file and make a small edit in a disposable project. Record these as separate results.
-5. Report versions, selected model, direct/relay mode, and the first failing step using [the contribution guide](CONTRIBUTING.md). Never include your key or raw session logs.
+**Something failed?** Start with [verification and troubleshooting](docs/VERIFY.md), then [open an issue](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/issues).
 
-## Development
+## Contributing
+
+Help make the next installation easier: test another model, reproduce the PyCharm UI workflow, improve a guide, or report a clear failure.
 
 ```sh
 npm run check
 npm test
 ```
 
-Tests use a local fake upstream, require no key and make no ELM requests. GitHub Actions runs them on Windows and Linux with Node.js 22 and 24. Do not add API keys, `.env` files, raw session transcripts or personal IDE settings to commits.
+The offline suite requires no ELM key and makes no ELM requests. GitHub Actions tests Windows and Linux with Node.js 22 and 24. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [readiness review](docs/REVIEW.md).
 
-## Design and next steps
+### Next milestones
 
-The first release centralises ELM routing and credential handling in a small HTTP module. Configuration generation and diagnostics live in the CLI. A full protocol conversion gateway was considered, but is unnecessary for ELM's existing Responses endpoint and would need independent validation for tool semantics, reasoning items and compaction.
+- [x] Verify VS Code routing, file reading, editing and test execution through ELM
+- [x] Verify switching between two models inside the VS Code plugin
+- [x] Validate direct and relay ACP transport for the PyCharm launcher
+- [ ] Test the full PyCharm UI workflow
+- [ ] Expand model compatibility coverage and investigate an ELM-specific picker catalog
+- [ ] Verify compaction and longer coding sessions
 
-Future work should start from reproducible client failures: PyCharm UI testing, broader model-specific compatibility tests and longer sessions. Implement protocol mappings only when a verified failure requires them. Reports should include client versions and redacted errors; see [CONTRIBUTING.md](CONTRIBUTING.md).
+## References & license
 
-## Documentation
+[ELM Proxy API](https://elm.edina.ac.uk/elm/help/proxy-api) · [Codex configuration](https://learn.chatgpt.com/docs/config-file/config-advanced) · [Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference) · [JetBrains Custom ACP](https://www.jetbrains.com/help/ai-assistant/acp.html) · [Codex ACP adapter](https://github.com/agentclientprotocol/codex-acp)
 
-- [ELM Proxy API](https://elm.edina.ac.uk/elm/help/proxy-api)
-- [OpenAI Codex provider configuration](https://learn.chatgpt.com/docs/config-file/config-advanced)
-- [OpenAI Codex configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
-- [JetBrains custom ACP agents](https://www.jetbrains.com/help/ai-assistant/acp.html)
-- [Maintained Codex ACP adapter](https://github.com/agentclientprotocol/codex-acp)
+Community-built and [MIT licensed](LICENSE). Not affiliated with or endorsed by EDINA, OpenAI or JetBrains.
 
-Licensed under [MIT](LICENSE).
+---
+
+**Using ELM for your coding workflow?** Try the guide, share your results, and star the repository to help colleagues find it.

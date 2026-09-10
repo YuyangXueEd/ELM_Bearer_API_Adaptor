@@ -2,6 +2,16 @@
 
 Use a small setup window instead of editing configuration files. This launcher connects directly to ELM, so **you do not need Node.js, Git, a terminal command, or a running relay**.
 
+## What needs installing?
+
+| Requirement | When it is needed |
+|---|---|
+| VS Code | Install once if missing; reuse your existing standard Windows installation. |
+| Official OpenAI Codex extension | Install or enable it in the ELM window if missing. A separate global Codex CLI installation is not required. |
+| Windows sandbox setup | Complete Codex's prompt for the ELM profile on first use. The launcher preserves the resulting settings on subsequent launches. |
+
+On the development machine, both installations were already present. After the launcher-created profile completed sandbox setup, its direct ELM connection passed a real GPT-5.5 file-read, edit and 3-test workflow. [Dated verification](../../docs/VERIFICATION-2026-09-10.md)
+
 ## First time
 
 1. Install [VS Code](https://code.visualstudio.com/) if you do not already have it. Standard Windows user and system installations are supported.
@@ -13,6 +23,8 @@ Use a small setup window instead of editing configuration files. This launcher c
 7. Click **Open ELM in VS Code**. In that window, open the official OpenAI Codex extension. If it is missing, install **Codex** by **OpenAI** from VS Code's Extensions view. Complete Codex's Windows sandbox setup and start a new conversation.
 
 The model list describes account access, not coding compatibility. Some ELM models do not support the Responses API or Codex tools and will fail even though ELM lists them. The launcher's connection check uses model discovery; it does not make a generation request or establish tool compatibility. See the [compatibility report](../../docs/VERIFICATION-2026-09-10.md).
+
+For example, the test account's list also contained embedding, image, speech and moderation models. Those entries are not evidence of compatibility with this coding workflow. GPT-5.5 passed the direct-mode IDE workflow; GPT-5.2 passed a direct API tool round trip and the earlier relay-mode IDE execution test. Other model IDs remain available to select, with compatibility unverified.
 
 ## Next time
 
@@ -48,6 +60,8 @@ Click **Forget saved key** to remove the saved credential. Close running ELM VS 
 | Model replies fail or tools do not work | Try a model with verified Codex support and consult [troubleshooting](../../docs/VERIFY.md). |
 
 This is a guided Windows launcher, not a bundled VS Code installer. PyCharm and other operating systems use the separate manual guides.
+
+Official references: [Codex IDE setup](https://learn.chatgpt.com/docs/codex/ide) and [Windows sandbox](https://learn.chatgpt.com/docs/windows/windows-sandbox). The preferred sandbox is `elevated`; the documented `unelevated` fallback was the working mode on the test machine.
 
 ## Developer check
 

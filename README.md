@@ -175,7 +175,7 @@ The client adds `/responses`. If you change `ELM_ADAPTOR_PORT`, regenerate the r
 |---|---|
 | Model discovery | Authenticated ELM `/models` checks passed |
 | Streaming and diagnostic function calls | Passed in direct and relay modes |
-| VS Code read → edit → test | Passed with GPT-5.5 on Windows, VS Code 1.137.0, extension 26.903.71938 / Codex 0.153.4 |
+| VS Code read → edit → test | Passed in direct and relay modes with GPT-5.5 on Windows, VS Code 1.137.0, extension 26.903.71938 / Codex 0.153.4 |
 | VS Code model switching | GPT-5.5 → GPT-5.2 passed; GPT-5.2 also executed tests |
 | PyCharm ACP transport | Adapter 1.11.0 / Codex 0.153.4: authentication, session creation and text replies passed in both modes |
 | PyCharm UI and editing | Pending; PyCharm is not installed on the test machine |

@@ -92,6 +92,8 @@ The local browser page lets you enter your key, load the **full account model li
 
 ## Quick start
 
+Using Ubuntu on Windows? The **[Remote-WSL guide](clients/wsl/README.md)** covers the separately verified manual setup: ELM GPT-5.5 file edits/tests and switching to GPT-5.2 inside the Codex plugin. The native Linux guided launcher does not configure the Windows-to-WSL handoff.
+
 Prefer the command line, a relay, or PyCharm? Use the manual path below.
 
 You need **Node.js 22+**, your own **ELM API key**, and an IDE/client to connect. Each user needs their own ELM access and model permissions.

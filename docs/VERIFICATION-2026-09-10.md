@@ -30,7 +30,7 @@ The offline suite checks authentication, client-header isolation, exact body for
 
 - **Model metadata:** the tested Codex build warned that gpt-5.3-codex metadata was missing and used fallback metadata. The model itself was available through ELM. Client model-catalog compatibility needs further investigation.
 - The built-in VS Code picker was not populated from ELM model discovery. It included entries unavailable to the tested account. Only GPT-5.5 and GPT-5.2 were UI-tested; an ELM-specific catalog is not shipped.
-- The actual VS Code UI read/edit/test workflow passed in both relay and direct modes. UI model switching was tested in relay mode; direct-mode GPT-5.2 passed the API diagnostic tool round trip but was not separately UI-tested.
+- The actual Windows VS Code UI read/edit/test workflow passed in both relay and direct modes. Native Windows UI model switching was tested in relay mode. The later Remote-WSL test below additionally verified direct-mode GPT-5.5 to GPT-5.2 switching in the plugin.
 - PyCharm UI is deferred because PyCharm is not installed on this machine. ACP authentication and transport were tested separately as described above.
 - `/responses/compact`, WebSockets, image workflows, all tool types and locally hosted models have not been validated.
 
@@ -55,4 +55,18 @@ Environment: Ubuntu 24.04.4 LTS, Linux 6.6.114.1-microsoft-standard-WSL2, native
 - Session 01a08ba5-80b8-75d1-887c-fb0b096579fc recorded provider elm, model gpt-5.5, source exec, and workspace-write sandbox with command network access disabled. This is CLI evidence, not IDE evidence.
 - Found and fixed a launcher detection problem: the inherited WSL PATH resolved code to Windows VS Code. Windows-mounted executables are now skipped, with a clear error when no native Linux VS Code exists. Regression coverage was added.
 
-The machine had neither native Linux VS Code nor the Remote-WSL extension. Full Remote-WSL or WSLg IDE routing, editing, and model switching remain unverified. Use the Windows launcher for the already-verified Windows VS Code path.
+At the end of that initial check, the machine had neither native Linux VS Code nor the Remote-WSL extension. The subsequent Remote-WSL installation and IDE test are recorded below. Native Linux VS Code under WSLg remains unverified.
+
+## Remote-WSL IDE verification
+
+Installed Microsoft WSL extension 0.104.3 in Windows VS Code and OpenAI Codex extension 26.903.71938 (Linux x64) in Ubuntu's VS Code server. The bundled Codex engine was 0.153.4. Opened an isolated Windows VS Code user-data directory against a disposable project on Ubuntu's Linux filesystem.
+
+The dedicated CODEX_HOME was a Linux path. Windows-to-Linux environment forwarding used WSLENV entries `ELM_API_KEY/u` and `CODEX_HOME/u`. Read-only process inspection confirmed that the Linux VS Code server and extension host received the intended configuration home and a non-empty ELM key; no key values were printed. No key was saved to TOML, a shell startup file, or a command-line argument.
+
+- VS Code displayed **WSL: Ubuntu** and the Linux project files. Workspace trust was granted only to the disposable test project.
+- Through the actual Codex plugin UI, GPT-5.5 read the marker `ELM_WSL_IDE_4829`, changed `return a - b` to `return a + b`, and ran `python3 -m unittest -v`: three tests passed.
+- In the same conversation, the plugin's model menu selected GPT-5.2. The UI recorded the model change, then GPT-5.2 reran the three tests successfully and read the marker again.
+- Linux session `01a08bc1-3cd0-79f3-b92f-96bb8bd9de08` recorded `source = vscode`, `model_provider = elm`, and turn models `gpt-5.5` then `gpt-5.2`. Both turns used `workspace-write` with command network access disabled. No sandbox bypass was used.
+- The edited file and a separate unittest rerun were independently checked and passed.
+
+This verifies direct ELM routing, reads, edits, command execution, and plugin model switching through Remote-WSL in the tested fresh-server setup. It does not verify the native Linux guided launcher's Windows bridge: that entry still rejects Windows-mounted code commands. Existing-server environment reuse, multiple concurrent account profiles, reconnect behavior, WSLg native desktop VS Code, and native macOS/Linux desktops remain outside this result. See the [manual Remote-WSL guide](../clients/wsl/README.md).

@@ -14,7 +14,7 @@ Read files, make edits, run tests — and switch supported models inside VS Code
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Experimental_pilot-amber)](#compatibility)
 
-**[Easy Windows setup](#easy-start-on-windows)** · **[Manual setup](#quick-start)** · **[VS Code guide](clients/vscode/README.md)** · **[PyCharm guide](clients/pycharm/README.md)** · **[Test results](docs/VERIFICATION-2026-09-10.md)**
+**[Easy Windows setup](#easy-start-on-windows)** · **[macOS & Linux setup](#easy-start-on-macos-and-linux)** · **[Manual setup](#quick-start)** · **[VS Code guide](clients/vscode/README.md)** · **[PyCharm guide](clients/pycharm/README.md)** · **[Test results](docs/VERIFICATION-2026-09-10.md)**
 
 </div>
 
@@ -74,6 +74,21 @@ No Node.js, Git, running relay or manual TOML edits are needed for this path. Yo
 The full account list includes models that may not support Codex tools. GPT-5.5 and GPT-5.2 have passed our earlier UI tests. This launcher selects the starting model; it does not replace the plugin's own model picker.
 
 **[Open the Windows setup guide →](clients/vscode/EASY-START.md)**
+
+## Easy start on macOS and Linux
+
+Download and extract the **[latest source ZIP](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/archive/refs/heads/main.zip)**. Install **Node.js 22+** and **VS Code** first.
+
+| Platform | Launch setup |
+|---|---|
+| **macOS** | Double-click **Start ELM.command**. If executable permissions were lost, run `sh start-elm.sh` in Terminal from the extracted folder. |
+| **Linux** | Open a terminal in the extracted folder and run `sh ./start-elm.sh`. |
+
+The local browser page lets you enter your key, load the **full account model list**, select a model, and open a project in a separate ELM VS Code window. Keys are kept in memory. Install the official Codex extension and complete its normal first-run prompts in VS Code.
+
+**Experimental:** native macOS/Linux editing and model switching still need tester verification. The `v0.1.0-beta.1` release ZIP predates these launchers; use the latest source ZIP above.
+
+**[Open the macOS and Linux setup guide →](clients/unix/README.md)**
 
 ## Quick start
 

@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ELM Coding — macOS & Linux</title>
+<style>
+body{font:16px/1.6 system-ui,sans-serif;background:#f3f6f5;color:#18392f;margin:0;padding:36px 18px}main{max-width:620px;margin:auto;background:white;padding:32px;border:1px solid #d5e2dc;border-radius:20px}h1{line-height:1.15;margin:10px 0}.badge{font-size:12px;letter-spacing:.12em;font-weight:700}p{color:#4b6259}label{display:block;font-weight:600;margin-top:20px}input,select,button{font:inherit;box-sizing:border-box;border-radius:8px;padding:10px 12px}input,select{width:100%;border:1px solid #a4b9ae;background:white;color:#18392f}button{cursor:pointer;background:#195d44;color:white;border:0;margin-top:16px}button:disabled{opacity:.5;cursor:wait}small{display:block;color:#51685e;margin-top:6px}#status{white-space:pre-wrap;background:#edf5f0;border-radius:8px;padding:14px;margin-top:20px;overflow-wrap:anywhere}#launch{width:100%}a{color:#195d44}:focus-visible{outline:3px solid #e2ac37;outline-offset:3px}
+</style></head><body><main>
+<div class="badge">ELM BEARER API ADAPTOR</div><h1>Your ELM models.<br>Your coding workspace.</h1>
+<p>Set up a separate ELM window in VS Code on macOS or Linux. Install <a href="https://code.visualstudio.com/" target="_blank" rel="noreferrer">VS Code</a> first.</p>
+<form id="setup">
+<label for="key">1. ELM API key</label><input id="key" type="password" autocomplete="off" spellcheck="false" required placeholder="Paste your ELM API key">
+<small>Your key stays in memory and is passed to VS Code. It is never saved by this setup page.</small>
+<button id="load" type="button">Load models</button>
+<label for="model">2. Starting model</label><select id="model" required disabled><option value="">Load your available models first</option></select>
+<small>The full account list is shown, including models that cannot code. Start with gpt-5.5 or gpt-5.2 if available. Availability does not guarantee Codex tool compatibility.</small>
+<label for="project">3. Project folder</label><input id="project" required spellcheck="false" placeholder="/Users/your-name/Projects/my-project">
+<small>Paste an existing absolute folder path. Close previous ELM VS Code windows before reopening or changing the starting model.</small>
+<button id="launch" type="submit" disabled>Open ELM in VS Code</button>
+</form><div id="status" role="status" aria-live="polite">Connecting to local setup…</div>
+<small>First use: install the official OpenAI Codex extension and complete its normal setup prompts. Native macOS/Linux editing workflows still need tester verification. When finished, close this page and press Ctrl+C in the setup terminal.</small>
+</main><script id="app">
+const token = location.hash.slice(1) || sessionStorage.getItem('elm-setup-token');
+if (token) sessionStorage.setItem('elm-setup-token', token);
+history.replaceState(null, '', '/');
+const $ = id => document.getElementById(id);
+let loadedKey = '', preview = false;
+async function api(path, data) {
+  const response = await fetch('/api/' + path, { method: data ? 'POST' : 'GET', headers: { 'X-ELM-Setup-Token': token || '', ...(data ? { 'Content-Type': 'application/json' } : {}) }, ...(data ? { body: JSON.stringify(data) } : {}) });
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error);
+  return result;
+}
+function reset() { loadedKey = ''; $('model').replaceChildren(new Option('Load your available models first', '')); $('model').disabled = true; $('launch').disabled = true; }
+$('key').addEventListener('input', reset);
+$('load').addEventListener('click', async () => {
+  reset(); $('load').disabled = true; $('status').textContent = 'Loading models from ELM…';
+  const key = $('key').value.trim();
+  try {
+    const { models } = await api('models', { key });
+    if (key !== $('key').value.trim()) throw new Error('The key changed. Load models again.');
+    $('model').replaceChildren(new Option('Choose a model', ''), ...models.map(id => new Option(id, id)));
+    $('model').value = models.includes('gpt-5.5') ? 'gpt-5.5' : models.includes('gpt-5.2') ? 'gpt-5.2' : '';
+    loadedKey = key; $('model').disabled = false; $('launch').disabled = preview;
+    $('status').textContent = `${models.length} models loaded. Choose a coding model and enter your project folder.`;
+  } catch (e) { $('status').textContent = e.message; }
+  finally { $('load').disabled = false; }
+});
+$('setup').addEventListener('submit', async event => {
+  event.preventDefault(); $('launch').disabled = true; $('status').textContent = 'Checking configuration and starting VS Code…';
+  try {
+    if (!loadedKey || loadedKey !== $('key').value.trim()) throw new Error('Load models with your current key first.');
+    const result = await api('launch', { key: loadedKey, model: $('model').value, project: $('project').value.trim() });
+    $('status').textContent = result.message;
+    $('key').value = ''; reset();
+  } catch (e) { $('status').textContent = e.message; $('launch').disabled = preview; }
+});
+api('status').then(info => {
+  preview = info.preview;
+  $('project').placeholder = info.platform === 'darwin' ? '/Users/your-name/Projects/my-project' : '/home/your-name/Projects/my-project';
+  $('status').textContent = (preview ? 'Windows preview — VS Code launch disabled.\n' : 'Ready.\n') + 'Isolated settings: ' + info.root;
+}).catch(e => { $('status').textContent = e.message; $('load').disabled = true; });
+</script></body></html>

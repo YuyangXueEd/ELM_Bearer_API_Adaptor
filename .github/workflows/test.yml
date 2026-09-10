@@ -4,7 +4,7 @@ jobs:
   test:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         node: [22, 24]
     runs-on: ${{ matrix.os }}
     steps:
@@ -14,6 +14,8 @@ jobs:
           node-version: ${{ matrix.node }}
       - run: npm run check
       - run: npm test
+      - if: runner.os != 'Windows'
+        run: sh -n start-elm.sh && sh -n 'Start ELM.command'
       - if: runner.os == 'Windows'
         shell: powershell
         run: powershell -NoProfile -File clients/vscode/start-elm.ps1 -SelfTest

@@ -35,3 +35,10 @@ The offline suite checks authentication, client-header isolation, exact body for
 - `/responses/compact`, WebSockets, image workflows, all tool types and locally hosted models have not been validated.
 
 Tests used ignored `.env` and `.local` files with a dedicated Codex configuration directory. No credentials or raw session transcripts are included in this repository. Existing user Codex provider configuration was not overwritten.
+
+
+## macOS/Linux guided launcher (source preview)
+
+Added POSIX launch scripts and a loopback browser setup page with no new dependencies. Local Windows checks: 13 automated tests passed; browser initial state and missing-key feedback were inspected; the new model discovery function returned all 54 account models, including gpt-5.5 and gpt-5.2. Tests cover isolated configuration preservation, refusal to overwrite a foreign provider, child argument/environment handling, and HTTP token/origin/host validation. The CI matrix now includes macOS, Linux, and Windows with Node.js 22 and 24, plus POSIX shell syntax checks.
+
+These checks do not establish native macOS/Linux VS Code routing, first-run permissions, file editing, or model switching. Those remain pending real desktop testing. The published v0.1.0-beta.1 ZIP does not include the new launchers; use the main source ZIP.

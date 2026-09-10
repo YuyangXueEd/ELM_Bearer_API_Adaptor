@@ -1,0 +1,14 @@
+{
+  "name": "elm-bearer-api-adaptor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Connect coding agents to ELM with diagnostics, Codex configuration and a local authenticated streaming relay.",
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node --env-file=.env src/cli.js serve",
+    "doctor": "node --env-file=.env src/cli.js doctor",
+    "test": "node --test",
+    "check": "node --check src/cli.js && node --check src/relay.js"
+  }
+}

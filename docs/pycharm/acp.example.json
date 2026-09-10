@@ -1,0 +1,13 @@
+{
+  "agent_servers": {
+    "Codex via ELM": {
+      "command": "C:\\Windows\\System32\\cmd.exe",
+      "args": ["/d", "/c", "codex-acp"],
+      "env": {
+        "MODEL_PROVIDER": "elm",
+        "INITIAL_AGENT_MODE": "read-only",
+        "CODEX_CONFIG": "{\"model\":\"gpt-5.3-codex\",\"model_provider\":\"elm\",\"model_reasoning_effort\":\"low\",\"model_providers\":{\"elm\":{\"name\":\"ELM\",\"base_url\":\"https://elm.edina.ac.uk/api/v1\",\"env_key\":\"ELM_API_KEY\",\"wire_api\":\"responses\",\"requires_openai_auth\":false,\"supports_websockets\":false}}}"
+      }
+    }
+  }
+}

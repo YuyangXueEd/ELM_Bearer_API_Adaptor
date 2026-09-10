@@ -1,15 +1,24 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
+import { parseArgs } from 'node:util';
 
 // Keep stdout exclusively for ACP. The IDE's working directory is the user's project.
 const root = fileURLToPath(new URL('../../', import.meta.url));
 if (existsSync(join(root, '.env'))) process.loadEnvFile(join(root, '.env'));
-const proxy = process.argv.includes('--proxy');
+const { values: { proxy = false } } = parseArgs({ options: { proxy: { type: 'boolean' } } });
 const envKey = proxy ? 'ELM_ADAPTOR_TOKEN' : 'ELM_API_KEY';
-if (!process.env[envKey]) throw new Error(`Set ${envKey} in the repository's local .env file.`);
-const port = Number(process.env.ELM_ADAPTOR_PORT || 8787);
-if (!Number.isInteger(port) || port < 1 || port > 65535) throw new Error('Invalid ELM_ADAPTOR_PORT');
+const credential = process.env[envKey];
+if (!credential || credential.startsWith('replace-')) throw new Error(`Set ${envKey} in the repository's local .env file.`);
+if (proxy && (credential.length < 24 || credential === process.env.ELM_API_KEY)) {
+  throw new Error('ELM_ADAPTOR_TOKEN must be a separate random token of at least 24 characters.');
+}
+const port = Number(process.env.ELM_ADAPTOR_PORT ?? 8787);
+if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('ELM_ADAPTOR_PORT must be 1024-65535.');
+const model = process.env.ELM_MODEL ?? 'gpt-5.3-codex';
+if (!/^[A-Za-z0-9_./:-]+$/.test(model)) throw new Error('Invalid ELM_MODEL identifier.');
+try { import.meta.resolve('@agentclientprotocol/codex-acp'); }
+catch { throw new Error('ACP adapter is missing. Run npm ci --prefix clients/pycharm from the repository root.'); }
 process.env.CODEX_HOME = join(root, '.local', 'pycharm-codex');
 mkdirSync(process.env.CODEX_HOME, { recursive: true });
 process.env.MODEL_PROVIDER = 'elm';
@@ -21,7 +30,7 @@ delete process.env.CODEX_PATH;
 process.env.CODEX_API_KEY = process.env[envKey];
 process.env.DEFAULT_AUTH_REQUEST = JSON.stringify({ methodId: 'api-key' });
 process.env.CODEX_CONFIG = JSON.stringify({
-  model: process.env.ELM_MODEL || 'gpt-5.3-codex',
+  model,
   model_provider: 'elm',
   model_reasoning_effort: 'low',
   model_providers: { elm: {

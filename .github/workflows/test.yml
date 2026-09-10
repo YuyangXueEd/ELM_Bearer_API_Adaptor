@@ -8,9 +8,11 @@ jobs:
         node: [22, 24]
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: ${{ matrix.node }}
       - run: npm run check
       - run: npm test
+      - run: npm ci --prefix clients/pycharm --no-audit --no-fund
+      - run: node clients/pycharm/node_modules/@openai/codex/bin/codex.js --version

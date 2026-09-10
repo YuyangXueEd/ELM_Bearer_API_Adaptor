@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import http from 'node:http';
 import { once } from 'node:events';
 import { spawnSync } from 'node:child_process';
-import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { pathToFileURL } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createRelay } from '../src/relay.js';
@@ -118,5 +119,21 @@ test('configuration contains no credentials and refuses to overwrite an existing
     assert.ok(!config.includes('private-test-key')); assert.ok(!config.includes(token));
     assert.equal(spawnSync(process.execPath, args, options).status, 1);
     assert.equal(await readFile(output, 'utf8'), config);
+  } finally { await rm(folder, { recursive: true }); }
+});
+
+test('doctor lists selectable model IDs and rejects malformed discovery without live requests', async () => {
+  const folder = await mkdtemp(join(tmpdir(), 'elm-doctor-'));
+  const mock = join(folder, 'fetch.mjs');
+  try {
+    for (const [data, status] of [[{ data: [{ id: 'test-b' }, { id: 'test-a' }] }, 0], [{ data: [null] }, 1]]) {
+      await writeFile(mock, `globalThis.fetch = async () => new Response(${JSON.stringify(JSON.stringify(data))});`);
+      const result = spawnSync(process.execPath, ['--import', pathToFileURL(mock).href, 'src/cli.js', 'doctor', '--model', 'test-a'], {
+        env: { ...process.env, ELM_API_KEY: 'offline-test-key', ELM_ADAPTOR_PORT: '8787' }, encoding: 'utf8',
+      });
+      assert.equal(result.status, status);
+      if (status === 0) assert.deepEqual(JSON.parse(result.stdout).models, ['test-a', 'test-b']);
+      else assert.match(result.stderr, /Unexpected \/models response/);
+    }
   } finally { await rm(folder, { recursive: true }); }
 });

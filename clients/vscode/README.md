@@ -33,13 +33,15 @@ Use the configuration-file entry in the Codex extension settings and edit the fi
 
 Back up the existing file, then merge [config.example.toml](config.example.toml).
 
+**Use the user-level file, not `<project>/.codex/config.toml`.** Current Codex deliberately ignores `model_provider` and `model_providers` in project-local configuration. This explains why the earlier project-level test continued using OpenAI. A trusted project does not remove this restriction. [Official rules](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
+
 This checked-in template connects directly to ELM. To use the optional local relay, start it as described in the [project README](../../README.md), generate a config with `node --env-file=.env src/cli.js config --proxy`, and merge that output instead. Supply `ELM_ADAPTOR_TOKEN` to the VS Code process in place of `ELM_API_KEY`; keep the relay running while using the agent.
 
 - Place `model`, `model_provider` and `model_reasoning_effort` at the TOML top level, before the first table header.
 - Update existing entries rather than defining the same key or `[model_providers.elm]` table twice.
 - Preserve existing MCP, project, permission and other settings.
 - This changes the default provider for Codex clients that read this configuration. The CLI or desktop app on the same machine may also be affected.
-- Keep `base_url` ending at `/api/v1`; Codex adds `/responses`.
+- Direct mode uses `https://elm.edina.ac.uk/api/v1`; relay mode uses `http://127.0.0.1:8787/v1`. Codex adds `/responses`.
 - `requires_openai_auth = false` selects provider-specific credentials. ELM still requires authentication.
 - `supports_websockets = false` selects the HTTP/SSE transport used in the API tests.
 
@@ -54,3 +56,11 @@ For WSL, SSH or containers, identify where the extension host and Codex process 
 ## Roll back
 
 Restore the configuration backup and restart VS Code. Temporary variables disappear when the processes holding them exit; persistent variables can be removed through Windows environment settings. There is no need to delete `auth.json` or other providers.
+
+## Choosing models
+
+`model` in the configuration selects the default. The installed extension's model picker has code paths for custom providers and catalogs, so manual TOML edits need not be the long-term workflow. However, this project does not yet supply an ELM model catalog or claim that all ELM models appear in the picker.
+
+For the initial pilot, use the tested `gpt-5.3-codex` default. If testing another model, check `npm run doctor -- --model MODEL_ID`, set that exact model as the default, restart and create a new conversation. If a suitable model is available in the picker, selecting it still requires checking that the provider remains ELM. Selecting a model does not configure the ELM endpoint or credentials.
+
+Codex documents `model_catalog_json` for a catalog loaded at startup. An ELM catalog generator and UI switching tests remain future work; model IDs alone do not establish tool support or context limits. [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)

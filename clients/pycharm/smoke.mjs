@@ -1,4 +1,4 @@
-// Optional live check: uses ELM quota, no IDE required, no file tools granted.
+// Optional live check: requests a text-only reply; no IDE or ACP client tools.
 import { spawn } from 'node:child_process';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
@@ -34,7 +34,7 @@ createInterface({ input: child.stdout }).on('line', line => {
       const update = message.params.update;
       if (update.sessionUpdate === 'agent_message_chunk' && update.content.type === 'text') output += update.content.text;
     }
-  } catch (error) { for (const waiter of pending.values()) waiter.reject(error); }
+  } catch { for (const waiter of pending.values()) waiter.reject(new Error('ACP returned invalid protocol data')); }
 });
 child.on('error', error => { for (const waiter of pending.values()) waiter.reject(error); });
 child.on('exit', () => { for (const waiter of pending.values()) waiter.reject(new Error('ACP exited before replying')); });
@@ -49,10 +49,12 @@ try {
   const result = await request('session/prompt', { sessionId: session.sessionId, prompt: [{ type: 'text', text: 'Do not use tools. Reply with exactly ELM_ACP_OK.' }] });
   assert.equal(result.stopReason, 'end_turn');
   // Codex can prepend a model-metadata warning as an ACP message chunk.
-  assert.ok(output.trim().endsWith('ELM_ACP_OK'), 'The expected ELM response marker was missing');
+  const reply = output.replace(/^Warning: Model metadata for `[^`]+` not found\. Defaulting to fallback metadata; this can degrade performance and cause issues\.\s*/, '').trim();
+  assert.ok(reply === 'ELM_ACP_OK', 'The expected exact ELM response marker was missing');
   console.log('ACP streamed ELM response: PASS');
 } catch (error) {
   console.error(error.message);
+  console.error('Check npm ci --prefix clients/pycharm, the root .env, and npm run doctor. In proxy mode, also start the relay.');
   process.exitCode = 1;
 } finally {
   clearTimeout(timeout);

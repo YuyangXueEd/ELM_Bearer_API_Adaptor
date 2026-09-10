@@ -9,7 +9,7 @@ This is a development snapshot for one Windows machine and one ELM account, not 
 - `doctor --live`: direct Responses SSE, a diagnostic function call, supplied function result and final OK reply.
 - `doctor --proxy --live`: the same round trip through the authenticated local relay.
 - Actual Codex clients, including the binary bundled with VS Code extension `openai.chatgpt` version `26.903.71938`, completed model response streams through the relay. An automated assertion confirmed that the bundled engine returned exactly `ELM_ADAPTOR_OK` for a no-tool prompt.
-- PyCharm ACP transport: `@agentclientprotocol/codex-acp` 1.11.0 with Codex 0.153.4 passed initialization, API-key authentication, session creation and a streamed `ELM_ACP_OK` reply in direct and relay modes. The relay recorded HTTP 200 for the ACP request. Reproduce with `node clients/pycharm/smoke.mjs` (add `--proxy` for relay mode). The test grants no file tools and does not launch PyCharm.
+- PyCharm ACP transport: `@agentclientprotocol/codex-acp` 1.11.0 with Codex 0.153.4 passed initialization, API-key authentication, session creation and a streamed `ELM_ACP_OK` reply in direct and relay modes. The relay recorded HTTP 200 for the ACP request. Reproduce with `node clients/pycharm/smoke.mjs` (add `--proxy` for relay mode). The test supplies no ACP client filesystem/terminal tools, requests a text-only reply, and does not launch PyCharm or verify Codex's own tools.
 
 The offline suite checks authentication, client-header isolation, exact body forwarding, incremental SSE, upstream error/status forwarding, redirects, timeouts, disconnect cancellation, request limits and non-destructive key-free configuration generation.
 

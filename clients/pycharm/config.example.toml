@@ -1,4 +1,6 @@
 # Standalone CLI config for an ELM-specific Codex home.
+# Standalone CLI only: apply to the dedicated CODEX_HOME/config.toml.
+# The Custom ACP launcher uses its own configuration and does not read this template.
 model = "gpt-5.3-codex"
 model_provider = "elm"
 model_reasoning_effort = "low"

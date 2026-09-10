@@ -4,6 +4,19 @@ Connect coding agents to the University of Edinburgh's ELM API. This community p
 
 It is an integration layer, not a new autonomous coding agent. Codex or another compatible client supplies the coding workflow and file tools. It is not affiliated with or endorsed by EDINA, OpenAI or JetBrains.
 
+## Readiness: experimental pilot
+
+Ready for colleagues to test connection setup and report results. **Not yet a verified plug-and-play coding setup for either IDE.** Start in a disposable project.
+
+| Component | Evidence | Status |
+|---|---|---|
+| Diagnostics and local relay | Offline tests plus live streaming/function-call checks | Ready for pilot testing |
+| PyCharm ACP launcher | Authentication, session creation and text replies through ELM | Ready for transport testing; PyCharm UI/editing still unverified |
+| VS Code Codex extension | Bundled engine works with ELM; previous UI conversation used OpenAI instead | Experimental; user-level provider setup must be verified |
+| ELM models in the plugin picker | Extension supports custom catalogs; no ELM catalog shipped | Not implemented or verified |
+
+See the [review findings](docs/REVIEW.md) and [dated evidence](docs/VERIFICATION-2026-09-10.md). An HTTP 200 or a model saying "I use ELM" is not proof of a working IDE integration.
+
 ## Why this exists
 
 ELM already documents an OpenAI-compatible Responses API. Bearer authentication is not a different protocol. The common setup problems are selecting the correct endpoint, passing credentials to the IDE process and configuring the agent's provider.
@@ -53,10 +66,12 @@ Each colleague needs their own key and model permissions. The default `gpt-5.3-c
 ### Direct Codex configuration
 
 ```sh
-node src/cli.js config --out codex.example.toml
+node --env-file=.env src/cli.js config --out codex.example.toml
 ```
 
 This creates a key-free TOML file and refuses to overwrite an existing file. Follow the separate [VS Code setup](clients/vscode/README.md) or [PyCharm setup](clients/pycharm/README.md). The PyCharm folder includes a pinned ACP launcher that loads the local `.env`; VS Code needs the process environment or provider authentication configured explicitly.
+
+**Provider settings belong in the user-level `CODEX_HOME/config.toml`.** Current Codex ignores `model_provider` and `model_providers` in a project's `.codex/config.toml`. Do not copy the template there. [Official configuration rules](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
 
 ### Optional local relay
 
@@ -107,6 +122,14 @@ No OpenAI key or ChatGPT subscription is used for ELM model requests. A particul
 ## Verification status
 
 See [the dated verification report](docs/VERIFICATION-2026-09-10.md) and [troubleshooting](docs/VERIFY.md). Live API streaming and diagnostic function-call round trips passed in both direct and relay modes. Full IDE editing workflows are not claimed as verified.
+
+### First tester checklist
+
+1. Set your own key in the local `.env` and run `npm run doctor`. It prints available model IDs; a listed model is not automatically compatible with Codex tools.
+2. Optionally run `npm run doctor -- --live` to check streaming and a diagnostic function call. This uses ELM quota.
+3. Follow exactly one IDE guide: [VS Code](clients/vscode/README.md) or [PyCharm](clients/pycharm/README.md).
+4. Verify the active provider and request route, then read a harmless file and make a small edit in a disposable project. Record these as separate results.
+5. Report versions, selected model, direct/relay mode, and the first failing step using [the contribution guide](CONTRIBUTING.md). Never include your key or raw session logs.
 
 ## Development
 

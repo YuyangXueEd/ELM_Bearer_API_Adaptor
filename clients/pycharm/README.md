@@ -26,7 +26,7 @@ This folder pins `@agentclientprotocol/codex-acp` to **1.11.0** and locks its de
 node clients/pycharm/smoke.mjs
 ```
 
-This optional live test uses ELM quota. It checks ACP initialization, session creation and the `ELM_ACP_OK` response without granting file tools. Expected output: three `PASS` lines. If it fails, check ELM access using `npm run doctor` first.
+This optional live test uses ELM quota. It checks ACP initialization, session creation and a requested text-only `ELM_ACP_OK` response in a disposable directory. It supplies no ACP client filesystem or terminal tools; this is not a test of Codex's own tool execution. Expected output: three `PASS` lines. If it fails, check ELM access using `npm run doctor` first.
 
 ### 3. Register in PyCharm
 
@@ -49,6 +49,10 @@ node clients/pycharm/smoke.mjs --proxy
 ```
 
 Keep the relay running. The launcher reads `ELM_ADAPTOR_PORT` and `ELM_MODEL` from the environment or local `.env`. Existing process variables take precedence.
+
+### Choosing a model
+
+For the initial pilot, keep `ELM_MODEL=gpt-5.3-codex`. To test another model, first check it with `npm run doctor -- --model MODEL_ID`, then update `ELM_MODEL` in the root `.env` and restart the custom agent. Model selection through the PyCharm UI has not been verified. The adapter's displayed model list is not proof that every listed model is available through your ELM account.
 
 ### Roll back
 

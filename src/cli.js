@@ -7,7 +7,7 @@ const help = `ELM Bearer API Adaptor (Node.js 22+; no dependencies)
 
 node --env-file=.env src/cli.js serve
 node --env-file=.env src/cli.js doctor [--live] [--proxy]
-node src/cli.js config [--proxy] [--model MODEL] [--out FILE]
+node --env-file=.env src/cli.js config [--proxy] [--model MODEL] [--out FILE]
 
 doctor lists models; --live adds a small paid streaming tool-call round trip.
 config prints key-free Codex TOML, or creates FILE without overwriting it.
@@ -29,7 +29,8 @@ async function main() {
   if (!Number.isInteger(port) || port < 1024 || port > 65535) throw new Error('ELM_ADAPTOR_PORT must be 1024-65535.');
   const base = values.proxy ? `http://127.0.0.1:${port}/v1` : ELM_BASE;
   if (command === 'config') {
-    const config = `# Merge top-level keys before the first TOML table. Contains no secrets.
+    const config = `# User-level CODEX_HOME/config.toml only: project configs ignore provider settings.
+# Merge top-level keys before the first TOML table. Contains no secrets.
 model = "${model}"
 model_provider = "elm"
 model_reasoning_effort = "low"
@@ -68,8 +69,10 @@ supports_websockets = false
     return response;
   }
   const models = await (await request('/models')).json();
-  const available = models.data?.some(item => item.id === model);
-  console.log(JSON.stringify({ check: 'models', status: 'ok', count: models.data?.length, model, available }));
+  if (!Array.isArray(models.data) || models.data.some(item => typeof item?.id !== 'string')) throw new Error('Unexpected /models response; expected data containing model IDs.');
+  const ids = models.data.map(item => item.id).sort();
+  const available = ids.includes(model);
+  console.log(JSON.stringify({ check: 'models', status: 'ok', count: ids.length, models: ids, model, available }));
   if (!available) throw new Error('Selected model is not listed for this ELM account. Use --model.');
   if (!values.live) return;
   // Parse complete SSE lines, regardless of network chunk boundaries. Never print raw model output.

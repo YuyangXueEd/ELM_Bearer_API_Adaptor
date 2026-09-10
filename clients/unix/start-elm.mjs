@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { createServer } from 'node:http';
 import { randomBytes } from 'node:crypto';
-import { access, mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises';
+import { access, mkdir, readFile, realpath, rename, stat, writeFile } from 'node:fs/promises';
 import { constants } from 'node:fs';
 import { homedir } from 'node:os';
 import { delimiter, isAbsolute, join } from 'node:path';
@@ -24,13 +24,23 @@ export function childEnvironment(key, home, env = process.env) {
   return { ...clean, CODEX_HOME: home, ELM_API_KEY: key };
 }
 
+export function isWindowsCodeBridge(executable, env = process.env) {
+  return Boolean(env.WSL_DISTRO_NAME) && /^\/mnt\/[a-z]\//i.test(executable);
+}
+
 export async function findCode(platform = process.platform) {
   const candidates = platform === 'darwin'
     ? ['/Applications/Visual Studio Code.app/Contents/MacOS/Electron', join(homedir(), 'Applications/Visual Studio Code.app/Contents/MacOS/Electron')]
     : [...(process.env.PATH ?? '').split(delimiter).filter(Boolean).map(p => join(p, 'code')), '/usr/bin/code', '/snap/bin/code'];
+  let windowsBridge = false;
   for (const candidate of candidates) {
-    try { await access(candidate, constants.X_OK); return candidate; } catch { /* Try the next standard installation. */ }
+    try {
+      await access(candidate, constants.X_OK);
+      if (isWindowsCodeBridge(await realpath(candidate))) { windowsBridge = true; continue; }
+      return candidate;
+    } catch { /* Try the next standard installation. */ }
   }
+  if (windowsBridge) throw new Error('WSL detected Windows VS Code. This Linux launcher requires native Linux VS Code; the Windows/Remote-WSL bridge is not supported yet. Use Start ELM.cmd from Windows for the verified Windows workflow.');
   throw new Error('Install Visual Studio Code first. On macOS, place it in Applications. On Linux, make the code command available in PATH.');
 }
 

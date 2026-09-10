@@ -8,7 +8,7 @@ This browser-assisted launcher configures a separate **ELM VS Code window**. It 
 
 - Install [Node.js 22 or newer](https://nodejs.org/en/download) and [Visual Studio Code](https://code.visualstudio.com/download).
 - Have an ELM API key and an existing project folder ready.
-- Use a local graphical desktop with a browser. Headless servers, SSH sessions, WSL, and remote containers are outside this launcher's tested scope.
+- Use a local graphical desktop with a browser. Headless servers, SSH sessions, and remote containers are outside this launcher's tested scope. WSL backend/CLI checks are described below; the Windows VS Code bridge is not supported by this launcher.
 - Download and extract the **[latest source ZIP](https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor/archive/refs/heads/main.zip)**. Keep the whole folder together. The older `v0.1.0-beta.1` release ZIP predates this launcher.
 
 ## macOS
@@ -46,6 +46,14 @@ The status message confirms that a launch was requested, not that Codex has comp
 To change the starting model, close **all ELM VS Code windows**, rerun setup, and choose another model. Normal VS Code windows may stay open. Existing sandbox settings in the ELM configuration are preserved.
 
 The launcher's full ELM list is separate from the Codex extension's model picker. The extension does not automatically import the full ELM catalog. Native Unix model switching has not yet been verified.
+
+## WSL Ubuntu: what works today
+
+On Ubuntu 24.04 under WSL2, we verified the shell entry point, browser page (opened from Windows), all 14 automated tests, ELM model discovery, and a streaming tool-call round trip. Linux Codex CLI 0.153.4 with GPT-5.5 also read a file, corrected a small Python bug, and ran three passing tests under the `workspace-write` sandbox.
+
+This does **not** verify the VS Code Remote-WSL extension workflow. WSL often finds a Windows `code` script on its inherited PATH. That script crosses into Windows, where Linux configuration paths and environment variables cannot simply be reused. Setup now skips Windows-mounted executables and reports a clear error if no native Linux VS Code is available. Use **Start ELM.cmd from Windows** for the verified Windows IDE workflow.
+
+The test installation used Linux Node.js 22.23.2 in a separate user cache directory, without changing shell startup files. A Windows Node.js/npm installation on WSL's inherited PATH is not a substitute for Linux Node.js. Native Linux VS Code under WSLg and Remote-WSL IDE routing/model switching remain unverified.
 
 Settings live in:
 

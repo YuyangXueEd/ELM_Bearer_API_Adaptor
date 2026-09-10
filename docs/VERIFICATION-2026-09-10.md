@@ -42,3 +42,17 @@ Tests used ignored `.env` and `.local` files with a dedicated Codex configuratio
 Added POSIX launch scripts and a loopback browser setup page with no new dependencies. Local Windows checks: 13 automated tests passed; browser initial state and missing-key feedback were inspected; the new model discovery function returned all 54 account models, including gpt-5.5 and gpt-5.2. Tests cover isolated configuration preservation, refusal to overwrite a foreign provider, child argument/environment handling, and HTTP token/origin/host validation. The CI matrix now includes macOS, Linux, and Windows with Node.js 22 and 24, plus POSIX shell syntax checks.
 
 These checks do not establish native macOS/Linux VS Code routing, first-run permissions, file editing, or model switching. Those remain pending real desktop testing. The published v0.1.0-beta.1 ZIP does not include the new launchers; use the main source ZIP.
+
+
+## WSL2 Ubuntu verification
+
+Environment: Ubuntu 24.04.4 LTS, Linux 6.6.114.1-microsoft-standard-WSL2, native Linux Node.js 22.23.2, Codex CLI 0.153.4. Node was downloaded from nodejs.org and checked against the published SHA-256 checksum; runtime and fixtures were isolated under the Linux user cache, with no shell startup changes.
+
+- All 14 automated tests and JavaScript/POSIX syntax checks passed in WSL.
+- The shell launcher started the loopback setup server. The Windows browser reached it through localhost forwarding and displayed the Linux settings path. Automatic browser opening was unavailable because xdg-open was absent; the printed-link fallback worked.
+- ELM discovery returned 54 models; GPT-5.5 streaming and diagnostic function round trip passed.
+- A real Linux Codex CLI run read the marker WSL_ELM_READ_7391, changed subtraction to addition in a disposable Python project, and executed three passing unittest cases. An independent rerun also passed.
+- Session 01a08ba5-80b8-75d1-887c-fb0b096579fc recorded provider elm, model gpt-5.5, source exec, and workspace-write sandbox with command network access disabled. This is CLI evidence, not IDE evidence.
+- Found and fixed a launcher detection problem: the inherited WSL PATH resolved code to Windows VS Code. Windows-mounted executables are now skipped, with a clear error when no native Linux VS Code exists. Regression coverage was added.
+
+The machine had neither native Linux VS Code nor the Remote-WSL extension. Full Remote-WSL or WSLg IDE routing, editing, and model switching remain unverified. Use the Windows launcher for the already-verified Windows VS Code path.

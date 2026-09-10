@@ -5,7 +5,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { EventEmitter } from 'node:events';
 import { request } from 'node:http';
-import { childEnvironment, saveConfig, launchProcess, createSetupServer } from '../clients/unix/start-elm.mjs';
+import { childEnvironment, saveConfig, launchProcess, createSetupServer, isWindowsCodeBridge } from '../clients/unix/start-elm.mjs';
+
+test('WSL does not treat a Windows-mounted code command as native Linux VS Code', () => {
+  assert.equal(isWindowsCodeBridge('/mnt/c/Users/test/Microsoft VS Code/bin/code', { WSL_DISTRO_NAME: 'Ubuntu' }), true);
+  assert.equal(isWindowsCodeBridge('/usr/share/code/bin/code', { WSL_DISTRO_NAME: 'Ubuntu' }), false);
+  assert.equal(isWindowsCodeBridge('/mnt/c/code', {}), false);
+});
 
 test('Unix setup preserves Codex settings and passes secrets only through the isolated child environment', async () => {
   const root = await mkdtemp(join(tmpdir(), 'elm setup '));

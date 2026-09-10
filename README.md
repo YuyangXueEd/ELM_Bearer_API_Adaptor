@@ -6,14 +6,14 @@ It is an integration layer, not a new autonomous coding agent. Codex or another 
 
 ## Readiness: experimental pilot
 
-Ready for colleagues to test connection setup and report results. **Not yet a verified plug-and-play coding setup for either IDE.** Start in a disposable project.
+Ready for colleagues to try in a disposable project. **VS Code routing, file reading, editing, test execution and model switching have passed on the Windows setup below.** PyCharm UI testing remains pending. This is still a technical pilot, not a guarantee for every installation or ELM model.
 
 | Component | Evidence | Status |
 |---|---|---|
 | Diagnostics and local relay | Offline tests plus live streaming/function-call checks | Ready for pilot testing |
 | PyCharm ACP launcher | Authentication, session creation and text replies through ELM | Ready for transport testing; PyCharm UI/editing still unverified |
-| VS Code Codex extension | Bundled engine works with ELM; previous UI conversation used OpenAI instead | Experimental; user-level provider setup must be verified |
-| ELM models in the plugin picker | Extension supports custom catalogs; no ELM catalog shipped | Not implemented or verified |
+| VS Code Codex extension | Actual UI used ELM with GPT-5.5, read files, patched code and ran 3 passing tests | Verified on Windows / VS Code 1.137.0 / extension 26.903.71938 |
+| VS Code model switching | Selected GPT-5.5 then GPT-5.2 in the plugin; both used ELM and executed tools | Verified for these two models; automatic ELM catalog discovery is not implemented |
 
 See the [review findings](docs/REVIEW.md) and [dated evidence](docs/VERIFICATION-2026-09-10.md). An HTTP 200 or a model saying "I use ELM" is not proof of a working IDE integration.
 
@@ -121,7 +121,7 @@ No OpenAI key or ChatGPT subscription is used for ELM model requests. A particul
 
 ## Verification status
 
-See [the dated verification report](docs/VERIFICATION-2026-09-10.md) and [troubleshooting](docs/VERIFY.md). Live API streaming and diagnostic function-call round trips passed in both direct and relay modes. Full IDE editing workflows are not claimed as verified.
+See [the dated verification report](docs/VERIFICATION-2026-09-10.md) and [troubleshooting](docs/VERIFY.md). Live API streaming and diagnostic function-call round trips passed in direct and relay modes. The actual VS Code read/edit/test workflow and model switching passed in relay mode; PyCharm UI and long-session compaction remain unverified.
 
 ### First tester checklist
 
@@ -144,7 +144,7 @@ Tests use a local fake upstream, require no key and make no ELM requests. GitHub
 
 The first release centralises ELM routing and credential handling in a small HTTP module. Configuration generation and diagnostics live in the CLI. A full protocol conversion gateway was considered, but is unnecessary for ELM's existing Responses endpoint and would need independent validation for tool semantics, reasoning items and compaction.
 
-Future work should start from reproducible client failures: complete VS Code/PyCharm UI tests, model-specific compatibility tests, and only then implement missing protocol mappings. Reports should include client versions and redacted errors; see [CONTRIBUTING.md](CONTRIBUTING.md).
+Future work should start from reproducible client failures: PyCharm UI testing, broader model-specific compatibility tests and longer sessions. Implement protocol mappings only when a verified failure requires them. Reports should include client versions and redacted errors; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Documentation
 

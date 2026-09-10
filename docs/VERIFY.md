@@ -43,6 +43,8 @@ Expect `completed` and an OK reply. If the status is `incomplete`, inspect `inco
 |---|---|
 | Missing environment variable/key | Variable name, actual Codex host, and whether the IDE/launcher was restarted |
 | Still using OpenAI despite project config | Provider keys are ignored in project-local config. Use user-level `CODEX_HOME/config.toml`, restart and create a new conversation |
+| Windows setup did not finish | Complete the plugin's official sandbox setup. The successful test used Continue without administrator access and `sandbox = "unelevated"`. Keep a working sandbox configuration; changing the relay does not initialize it |
+| Model picker shows models absent from ELM | The built-in picker is not ELM discovery. Run doctor to check account availability. GPT-5.5 to GPT-5.2 switching was UI-tested; other entries need verification |
 | 401 | Missing or invalid ELM key, an OpenAI key used by mistake, or inactive provider configuration |
 | 400 | Request parameters and model compatibility; inspect the error body |
 | 404 | Extra URL path segments, model availability under /models, or missing resources |

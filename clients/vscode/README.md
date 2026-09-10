@@ -2,7 +2,43 @@
 
 These instructions apply to the official Codex extension. The separate ELM Coding extension does not use this configuration.
 
-**Current verification:** the extension's bundled Codex engine returned a reply through ELM. However, the tested graphical-panel conversation used `openai` / `gpt-6-astra`, and a fresh reply generated no request to the running ELM relay. Its project-level ELM configuration had not taken effect. Full IDE editing through ELM remains unverified. See the [dated report](../../docs/VERIFICATION-2026-09-10.md).
+**Verified on Windows:** VS Code 1.137.0, extension `openai.chatgpt` 26.903.71938, bundled Codex 0.153.4. With a dedicated user-level `CODEX_HOME`, the graphical panel used ELM through the local relay, read files, fixed a Python function, created tests and ran all 3 successfully. Switching from GPT-5.5 to GPT-5.2 inside the same conversation retained ELM routing and successfully reran the tests. The earlier project-level configuration failure is retained in the [dated report](../../docs/VERIFICATION-2026-09-10.md).
+
+## Tested isolated Windows setup
+
+This uses a separate Codex home and VS Code user-data directory so your normal Codex configuration remains available. Use a fresh external PowerShell terminal, not a terminal inherited from another Codex session. Run the commands from this repository's root. Node.js 22+, VS Code and the official Codex extension are required.
+
+1. Fill in the local `.env` as described in the root README and run `npm start` in a separate terminal. Keep the relay running.
+2. Create a new configuration directory and generate its key-free relay configuration:
+
+```powershell
+$elmCodexHome = Join-Path $PWD '.local\vscode-elm-home'
+$elmCodeProfile = Join-Path $PWD '.local\vscode-elm-user'
+New-Item -ItemType Directory -Force -Path $elmCodexHome | Out-Null
+node --env-file=.env src/cli.js config --proxy --model gpt-5.5 --out (Join-Path $elmCodexHome 'config.toml')
+```
+
+The generator refuses to overwrite an existing file. On later launches, keep that file and skip generation; it also contains sandbox settings saved by the plugin.
+
+3. Start an isolated VS Code process with the local token. Enter the **same** `ELM_ADAPTOR_TOKEN` used by the relay at the hidden prompt. Replace the example project path with a disposable local project:
+
+```powershell
+$elmLocalToken = Read-Host 'ELM_ADAPTOR_TOKEN from your local .env' -AsSecureString
+$env:ELM_ADAPTOR_TOKEN = [System.Net.NetworkCredential]::new('', $elmLocalToken).Password
+$env:CODEX_HOME = $elmCodexHome
+code --user-data-dir "$elmCodeProfile" --extensions-dir "$env:USERPROFILE\.vscode\extensions" --new-window 'C:\Projects\YourDisposableProject'
+```
+
+This command assumes the normal Windows extension location. If your installation uses another location, adjust `--extensions-dir`, or install the official Codex extension in the isolated profile. The relay supplies the upstream key; this VS Code process only needs the local token. Fully close the isolated instance before relaunching with changed environment variables.
+
+4. Open Codex and complete its Windows sandbox setup. The successful test used the official **Continue without administrator access** option after administrator setup did not finish; the plugin saved `[windows] sandbox = "unelevated"`. If your sandbox is already working, keep it. Leave the normal permission controls enabled.
+5. Create a new conversation and follow the verification steps below. Use the model menu to select **5.5**; the shared CLI default remains `gpt-5.3-codex`, while this VS Code example explicitly selects the UI-tested model.
+
+To return to your normal setup, close the isolated window and this PowerShell terminal, then open VS Code normally. Do not delete or replace your normal `.codex` directory.
+
+## Alternative: configure an existing VS Code installation
+
+The following sections explain direct access and merging settings into your existing user-level configuration. The end-to-end UI test above used relay mode.
 
 ### How to prove which provider is used
 
@@ -59,8 +95,15 @@ Restore the configuration backup and restart VS Code. Temporary variables disapp
 
 ## Choosing models
 
-`model` in the configuration selects the default. The installed extension's model picker has code paths for custom providers and catalogs, so manual TOML edits need not be the long-term workflow. However, this project does not yet supply an ELM model catalog or claim that all ELM models appear in the picker.
+You can switch the tested models inside the plugin without manually editing TOML:
 
-For the initial pilot, use the tested `gpt-5.3-codex` default. If testing another model, check `npm run doctor -- --model MODEL_ID`, set that exact model as the default, restart and create a new conversation. If a suitable model is available in the picker, selecting it still requires checking that the provider remains ELM. Selecting a model does not configure the ELM endpoint or credentials.
+1. Expand the Codex side panel if its controls show only icons.
+2. Click the model/effort control beside the composer, such as **5.5 Light**.
+3. In the effort popup, click the model selection control (labelled **Select model** to accessibility tools; visually the effort label has a right arrow).
+4. Select **5.2** or **5.5**, then click the composer to dismiss the popup and send a new request.
 
-Codex documents `model_catalog_json` for a catalog loaded at startup. An ELM catalog generator and UI switching tests remain future work; model IDs alone do not establish tool support or context limits. [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
+The test switched an existing conversation from `gpt-5.5` to `gpt-5.2`; the UI displayed the change, the next turn's metadata recorded the new model, and the provider remained `elm`. GPT-5.2 then executed the test command successfully. The plugin may persist model defaults itself; do not assume selection is confined to one conversation.
+
+`model` in TOML supplies the initial default. Endpoint/provider/authentication still require configuration. The picker is not a live list from ELM `/models`: it also showed models unavailable to the test account, including 6 Astra. Check your own account with `npm run doctor`; avoid **Default** or unverified entries when checking routing. Availability alone does not establish Codex tool compatibility.
+
+For models absent from the picker, configure their exact ID and restart with a new conversation. `gpt-5.3-codex` passed API/CLI checks but was absent from this build's catalog and produced a missing-metadata warning. No ELM catalog generator is shipped. Codex documents `model_catalog_json` for startup catalogs, but a broad ELM catalog needs separate capability validation. [Configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)

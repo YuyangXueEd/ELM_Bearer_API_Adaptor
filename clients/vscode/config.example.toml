@@ -1,6 +1,6 @@
 # Merge top-level entries before any [table] in an existing config.
 # Apply to user-level CODEX_HOME/config.toml; project-local provider settings are ignored.
-model = "gpt-5.3-codex"
+model = "gpt-5.5"
 model_provider = "elm"
 model_reasoning_effort = "low"
 

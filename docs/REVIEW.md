@@ -2,13 +2,13 @@
 
 ## Decision
 
-Ready for a technical pilot of diagnostics, the loopback relay and the PyCharm ACP transport. Not ready to advertise as a fully verified VS Code/PyCharm coding-agent installation. Both IDEs still need an end-to-end file-read, edit and test workflow through ELM.
+Ready for a technical pilot. VS Code's actual graphical panel now has a verified ELM file-read, edit and test workflow plus model switching on the documented Windows setup. Diagnostics, the relay and PyCharm ACP transport have separate passing checks. PyCharm UI, a broad model catalog and long-session compaction remain unverified.
 
 ## Findings and changes
 
 | Priority | Finding | Resolution |
 |---|---|---|
-| High | VS Code's tested conversation used OpenAI while a project-level ELM config existed. Current Codex ignores provider keys at project scope. | Guides and generated templates now require user-level configuration. This corrects setup instructions; UI routing through ELM still needs verification. |
+| High | VS Code's tested conversation used OpenAI while a project-level ELM config existed. Current Codex ignores provider keys at project scope. | Guides and templates require user-level configuration. A dedicated CODEX_HOME and isolated VS Code process now passed UI routing, file reads, editing and test execution through ELM. |
 | Medium | The ACP launcher silently ignored unknown arguments; a typo such as `--proyx` selected direct access. | Strict argument parsing now fails before starting the adapter. Regression tested. |
 | Medium | ACP accepted placeholder credentials, short/shared local tokens, and ports rejected by the relay. | Validate these before adapter startup; regression tests cover invalid settings without ELM requests. |
 | Medium | Diagnostics said they listed models but printed only a count and the selected ID. | Print available IDs and validate the discovery response shape. Regression tested with a mocked fetch. |
@@ -28,9 +28,8 @@ Ready for a technical pilot of diagnostics, the loopback relay and the PyCharm A
 
 ## Remaining acceptance criteria
 
-1. VS Code: apply user-level ELM settings, restart, create a new conversation, and confirm ELM session metadata plus matching relay traffic. Then read/edit a disposable file and run its test.
-2. PyCharm: register the provided custom ACP entry and repeat the same workflow inside the actual AI Chat UI. Transport success alone does not verify that UI.
-3. Model switching: validate selection in each IDE while keeping ELM routing. An ELM catalog generator is not included; do not promise that every ELM model appears or supports Codex tools.
-4. Longer sessions: verify compaction support before advertising long-running use. `/responses/compact` remains pass-through with upstream support unconfirmed.
+1. PyCharm: register the custom ACP entry and repeat the workflow inside the actual AI Chat UI once PyCharm is available. Testing is currently deferred because it is not installed; transport success alone does not verify that UI.
+2. Broader compatibility: VS Code switching from GPT-5.5 to GPT-5.2 passed while retaining ELM routing and working tools. Other models and PyCharm switching need separate tests. No ELM catalog generator is included.
+3. Longer sessions: verify compaction support before advertising long-running use. `/responses/compact` remains pass-through with upstream support unconfirmed.
 
 The [verification report](VERIFICATION-2026-09-10.md) retains the earlier observed failures. The [tester checklist](../README.md#first-tester-checklist) is the supported entry point for colleagues.

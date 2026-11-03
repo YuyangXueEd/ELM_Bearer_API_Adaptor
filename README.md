@@ -24,7 +24,7 @@ Read files, make edits, run tests — and switch supported models inside VS Code
 
 ELM Bearer API Adaptor provides connection diagnostics, ready-to-use Codex configuration templates, and an optional local streaming relay. Codex supplies the coding tools; this project connects those tools to ELM.
 
-> **Verified in the VS Code UI:** ELM routing, file reads, code edits, test execution, and switching from GPT-5.5 to GPT-5.2. Start with a disposable project. PyCharm's ACP transport has passed separate checks; its IDE workflow is still awaiting testing.
+> **Verified in the VS Code UI:** ELM routing, file reads, code edits, test execution, and switching from GPT-5.5 to GPT-5.2. Start with a disposable project. PyCharm's ACP transport is verified, and an initial PyCharm UI check confirmed ELM replies plus IDE file creation and edits; the PyCharm agent's terminal and test-running tools remain unverified.
 
 ## Why use it?
 
@@ -128,10 +128,33 @@ The live check makes two small generation requests and uses ELM quota. It execut
 | Client | Start here | Current status |
 |---|---|---|
 | **VS Code + Codex** | **[Set up VS Code →](clients/vscode/README.md#tested-isolated-windows-setup)** | Read, edit, test and model switching verified through the relay on Windows |
-| **PyCharm + Custom ACP** | **[Set up PyCharm →](clients/pycharm/README.md)** | Launcher and ACP transport tested; actual PyCharm UI pending |
+| **PyCharm + Custom ACP** | **[Set up PyCharm →](clients/pycharm/README.md)** | ACP transport and initial UI file-tool use verified; terminal/test execution pending |
 | **Another compatible client** | [Connection options below](#connection-options) | Configure and verify for your client and model |
 
 The VS Code guide includes an isolated setup that keeps your normal Codex configuration available. The PyCharm folder includes its own pinned ACP dependencies and a launcher that loads your local `.env`.
+
+### PyCharm with ELM through Custom ACP
+
+This connects JetBrains AI Chat to the repository's Codex ACP launcher and routes model requests to ELM. It needs your own ELM API key, but no OpenAI or JetBrains AI subscription. The custom agent appears under **Agents** in AI Chat's mode selector, not in the regular model list.
+
+On Windows, start from a clean checkout in PowerShell:
+
+```powershell
+git clone https://github.com/YuyangXueEd/ELM_Bearer_API_Adaptor.git
+Set-Location ELM_Bearer_API_Adaptor
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+npm ci --prefix clients/pycharm
+```
+
+Edit the local `.env` and set `ELM_API_KEY` to your ELM key. Keep the key in `.env`; do not put it in `acp.json` or commit it. The default model is `gpt-5.3-codex`; check that it is enabled for your account with `npm run doctor` or set `ELM_MODEL` to an enabled model.
+
+In PyCharm AI Chat, open the top-right options menu and choose **Add Custom Agent**. Merge the **Codex via ELM** entry from [`clients/pycharm/acp.example.json`](clients/pycharm/acp.example.json) into `%USERPROFILE%\.jetbrains\acp.json`, preserving existing `agent_servers`. Replace `command` with the full Node path from `(Get-Command node).Source`, and replace the `launch.mjs` path with its absolute path in your checkout. Do not launch through `npm`.
+
+Then open the selector at the bottom-left of AI Chat (it may currently say **Chat**), choose **Agents → Codex via ELM**, and start **New Chat**. This local custom agent is not a registry installation under Settings → AI Assistant → Agents. If it does not appear, check the JSON and restart PyCharm.
+
+For a text-only connection check, send `Do not use tools. Reply with exactly ELM_ACP_OK.` The optional `node clients/pycharm/smoke.mjs` also uses ELM quota and verifies text transport only; it does **not** test IDE tools. To verify tools, use a disposable project and ask the agent to read a file, create or edit a small file, and run a harmless command or test. The launcher starts in read-only mode; switch to an editing mode when you want it to change files.
+
+See the [full PyCharm guide](clients/pycharm/README.md) for relay mode, model selection, troubleshooting, and rollback.
 
 > **The configuration detail that matters:** Codex provider settings belong in the user-level `CODEX_HOME/config.toml`. Project-local `.codex/config.toml` ignores `model_provider` and `model_providers`. The VS Code guide walks through the correct location and process environment. [Official configuration rules](https://learn.chatgpt.com/docs/config-file/config-advanced#project-config-files-codexconfigtoml)
 
@@ -197,7 +220,9 @@ The client adds `/responses`. If you change `ELM_ADAPTOR_PORT`, regenerate the r
 | VS Code read → edit → test | Passed in direct and relay modes with GPT-5.5 on Windows, VS Code 1.137.0, extension 26.903.71938 / Codex 0.153.4 |
 | VS Code model switching | GPT-5.5 → GPT-5.2 passed; GPT-5.2 also executed tests |
 | PyCharm ACP transport | Adapter 1.11.0 / Codex 0.153.4: authentication, session creation and text replies passed in both modes |
-| PyCharm UI and editing | Pending; PyCharm is not installed on the test machine |
+| PyCharm AI Chat and IDE file tools | 3 November 2026, PyCharm 2026.2.4: Codex via ELM returned a response, created `hello_world.py`, and edited `script.py` through `mcp.pycharm.apply_patch`; the UI showed a model-metadata fallback warning for `gpt-5.3-codex` |
+| PyCharm agent terminal and test execution | Not yet verified |
+| Repository checks run locally | 3 November 2026: `npm test` passed (14 tests); `npm run check` passed. These ran in the local shell, not through the PyCharm agent. |
 | Account model discovery in the Windows launcher | Fetches the full ELM list when you click Load models |
 | Automatic ELM catalog inside the Codex plugin | Not implemented; its own picker can include models unavailable to your account |
 | Long-session compaction | Upstream support unconfirmed |
@@ -253,7 +278,8 @@ The offline suite requires no ELM key and makes no ELM requests. GitHub Actions 
 - [x] Verify VS Code routing, file reading, editing and test execution through ELM
 - [x] Verify switching between two models inside the VS Code plugin
 - [x] Validate direct and relay ACP transport for the PyCharm launcher
-- [ ] Test the full PyCharm UI workflow
+- [x] Verify PyCharm ACP UI response and IDE file create/edit tools
+- [ ] Verify PyCharm agent terminal execution and test running
 - [ ] Expand model compatibility coverage and investigate an ELM-specific picker catalog
 - [ ] Verify compaction and longer coding sessions
 

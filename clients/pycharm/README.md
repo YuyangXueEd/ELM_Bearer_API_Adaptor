@@ -2,7 +2,7 @@
 
 This folder is independent of the [VS Code setup](../vscode/README.md). Use a **Custom ACP Agent** in JetBrains AI Chat, or run standalone Codex in PyCharm Terminal.
 
-**Verified:** ACP initialization, session creation and a streamed reply through ELM in direct and relay modes on Windows. **Not yet verified:** PyCharm's graphical chat panel and a complete file-editing workflow. See the [verification report](../../docs/VERIFICATION-2026-09-10.md).
+**Verified:** ACP initialization, session creation and streamed replies through ELM in direct and relay modes on Windows. On 3 November 2026, PyCharm 2026.2.4 also selected **Codex via ELM**, received a reply, created `hello_world.py`, and edited `script.py` through `mcp.pycharm.apply_patch`. The IDE showed a model-metadata fallback warning for `gpt-5.3-codex`. **Still to verify:** agent terminal commands and running project tests. See the [earlier transport verification report](../../docs/VERIFICATION-2026-09-10.md).
 
 ## Option A: Custom ACP Agent in AI Chat
 
@@ -30,11 +30,11 @@ This optional live test uses ELM quota. It checks ACP initialization, session cr
 
 ### 3. Register in PyCharm
 
-Open **AI Chat → agent selector → Add Custom Agent**. Merge the entry from [acp.example.json](acp.example.json) into `~/.jetbrains/acp.json`, preserving other entries.
+In AI Chat, open the top-right options menu and choose **Add Custom Agent**. Merge the entry from [acp.example.json](acp.example.json) into `%USERPROFILE%\.jetbrains\acp.json`, preserving other entries. Replace both example paths with your local absolute paths. Find Node with `(Get-Command node).Source` on Windows or `command -v node` on macOS/Linux. The command must be the Node executable and the argument must be this folder's `launch.mjs`. Do not launch through npm, which can write non-ACP text to stdout. Keep the ELM key in the ignored root `.env`; it does not belong in `acp.json`.
 
-Replace both paths with your local absolute paths. Find Node with `Get-Command node` on Windows or `command -v node` on macOS/Linux. The command must be the Node executable and the argument must be this folder's `launch.mjs`. Do not launch through npm, which can write non-ACP text to stdout.
+After adding the entry, use AI Chat's bottom-left selector (often labelled **Chat**) and choose **Agents → Codex via ELM**. This is a local custom agent; it does not appear as a registry installation under Settings → AI Assistant → Agents. If it is missing, validate `acp.json` and restart the IDE.
 
-Select **Codex via ELM**, start a new chat, and ask: `Do not use tools. Reply with exactly ELM_ACP_OK.` Then ask it to read a harmless file in a disposable project. Change the initial read-only mode to an appropriate editing mode when you want edits.
+Select **Codex via ELM**, start a new chat, and ask: `Do not use tools. Reply with exactly ELM_ACP_OK.` Then, in a disposable project, ask it to read a harmless file and make a small edit. The launcher starts in read-only mode; change the session to an appropriate editing mode when you want edits. The text-only smoke check does not validate IDE tools, terminal commands, or test execution.
 
 The launcher supplies the provider credential to ACP's API-key authentication step automatically. This step was necessary with the tested adapter even though ELM uses `requires_openai_auth = false`. Credentials are available to the local process and may be persisted by Codex under the dedicated, ignored `.local/pycharm-codex` home. Neither `CODEX_CONFIG` nor the shared JSON contains the key. That dedicated home does not inherit your normal Codex authentication, history, skills or MCP settings.
 
